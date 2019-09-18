@@ -1,0 +1,18 @@
+apiVersion: tekton.dev/v1alpha1
+kind: TaskRun
+metadata:
+  generateName: tf-build-run-
+spec:
+  serviceAccount: tekton-demo
+  taskRef:
+    name: tf-build
+  inputs:
+    resources:
+    - name: source
+      resourceRef:
+        name: tf-git
+  outputs:
+    resources:
+    - name: source
+      resourceRef:
+        name: tf-git

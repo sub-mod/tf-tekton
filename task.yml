@@ -1,0 +1,21 @@
+apiVersion: tekton.dev/v1alpha1
+kind: Task
+metadata:
+  name: tf-build
+spec:
+  inputs:
+    resources:
+    - name: source
+      targetPath: /
+      type: git
+  outputs:
+    resources:
+    - name: source
+      type: git
+  steps:
+  - name: list
+    image: alpine
+    command: ["/bin/sh"]
+    args:
+    - "-c"
+    - "ls"
