@@ -7,7 +7,7 @@ spec:
   type: git
   params:
   - name: url
-    value: https://github.com/thoth-station/tensorflow-build-s2i.git
+    value: https://github.com/sub-mod/tensorflow-build.git
 ---
 apiVersion: tekton.dev/v1alpha1
 kind: PipelineResource
