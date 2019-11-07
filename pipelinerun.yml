@@ -1,16 +1,15 @@
----
 apiVersion: tekton.dev/v1alpha1
 kind: PipelineRun
 metadata:
-  generateName: tf-build-pipelinerun-
+  name: tf-build-pipeline-run
 spec:
   serviceAccount: tekton-demo
   pipelineRef:
-    name: tf-pipeline
+    name: tf-build-pipeline
   resources:
-  - name: app-git
-    resourceRef:
-      name: tf-git
-  - name: app-image
-    resourceRef:
-      name: tf-image
+    - name: git-repo
+      resourceRef:
+        name: git-repo
+    - name: build-image
+      resourceRef:
+        name: build-image
