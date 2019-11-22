@@ -9,6 +9,8 @@ spec:
       type: git
     - name: build-image
       type: image
+    - name: git-source
+      type: git
   tasks:
     - name: tf-build-run
       taskRef:
@@ -18,6 +20,12 @@ spec:
           value: Dockerfile.centos6
         - name: TLSVERIFY
           value: "false"
+        - name: DEV_TOOLSET_VERSION
+          value: "7"
+        - name: BAZEL_VERSION
+          value: "0.24.1"
+        - name: PYTHON_VERSION
+          value: "3.6"
       resources:
         inputs:
           - name: source
@@ -29,6 +37,11 @@ spec:
       taskRef:
         name: tf-run
       resources:
+        inputs:
+          - name: build-image
+            resource: build-image
+          - name: git-source
+            resource: git-source
         outputs:
           - name: source
             resource: git-repo

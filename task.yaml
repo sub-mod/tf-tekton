@@ -1,0 +1,117 @@
+apiVersion: tekton.dev/v1alpha1
+kind: Task
+metadata:
+  name: tf-run
+spec:
+  inputs:
+    resources:
+    - name: build-image
+      type: image
+    - name: git-source
+      type: git
+  outputs:
+    resources:
+    - name: source
+      type: git
+  steps:
+    - name: list
+      image: $(inputs.resources.build-image.url)
+      command: ["/bin/sh"]
+      args:
+        - "-c"
+        - "env"
+      env:
+        - name: "CUSTOM_BUILD"
+          value: "bazel build -c opt --copt=-mavx --copt=-mavx2 --copt=-mfma --copt=-mfpmath=both --copt=-msse4.2 --define='grpc_no_ares=true' --cxxopt='-std=c++11' --cxxopt='-D_GLIBCXX_USE_CXX11_ABI=0' --verbose_failures //tensorflow/tools/pip_package:build_pip_package"
+        - name: "TEST_LOOP"
+          value: "n"
+        - name: "PYTHON_VERSION"
+          value: "3.6"
+        - name: "BAZEL_VERSION"
+          value: "0.24.1"
+        - name: "DEV_TOOLSET_VERSION"
+          value: "7"
+        - name: "TF_CUDNN_VERSION"
+          value: "7"
+        - name: "TF_CUDA_VERSION"
+          value: "10.0"
+        - name: "TF_NEED_CUDA"
+          value: "0"
+        - name: "GCC_HOST_COMPILER_PATH"
+          value: "/opt/rh/devtoolset-7/root/usr/bin/gcc"
+        - name: "GCC_HOST_COMPILER_PREFIX"
+          value: "/opt/rh/devtoolset-7/root/usr/bin"
+        - name: "TF_GIT_BRANCH"
+          value: $(inputs.resources.git-source.revision)
+        - name: "GIT_RELEASE_REPO"
+          valueFrom:
+            secretKeyRef:
+              name: tf-secret
+              key: git-release-repo
+        - name: "GIT_TOKEN"
+          valueFrom:
+            secretKeyRef:
+              name: tf-secret
+              key: git-token
+        - name: "BUILD_OPTS"
+          value: ""
+        - name: "TF_CUDA_COMPUTE_CAPABILITIES"
+          value: "3.0,3.5,5.2,6.0,6.1,7.0"
+        - name: "CUDA_TOOLKIT_PATH"
+          value: "/usr/local/cuda"
+        - name: "CUDNN_INSTALL_PATH"
+          value: "/usr/local/cuda"
+        - name: "HOST_ON_HTTP_SERVER"
+          value: "n"
+        - name: "TEST_WHEEL_FILE"
+          value: "y"
+        - name: "GIT_TAG"
+          value: ""
+        - name: "CUSTOM_TEST"
+          value: "bazel test -c opt --local_resources 2048.51.0 -- //tensorflow/... -//tensorflow/compiler/... -//tensorflow/contrib/lite/..."
+        - name: "TF_ENABLE_TEST"
+          value: "0"
+        - name: "EXTRA_BAZEL_ARGS"
+          value: "--host_javabase=@local_jdk//:jdk"
+        - name: "LOCAL_BUILD"
+          value: "y"
+        - name: "TF_NEED_JEMALLOC"
+          value: "0"
+        - name: "TF_NEED_OPENCL_SYCL"
+          value: "0"
+        - name: "TF_CUDA_CLANG"
+          value: "0"
+        - name: "TF_NEED_GCP"
+          value: "0"
+        - name: "TF_NEED_VERBS"
+          value: "0"
+        - name: "TF_NEED_HDFS"
+          value: "0"
+        - name: "TF_ENABLE_XLA"
+          value: "0"
+        - name: "TF_NEED_OPENCL"
+          value: "0"
+        - name: "TF_NEED_MPI"
+          value: "0"
+        - name: "TF_NEED_GDR"
+          value: "0"
+        - name: "TF_NEED_S3"
+          value: "0"
+        - name: "TF_NEED_KAFKA"
+          value: "0"
+        - name: "TF_NEED_OPENCL_SYCL"
+          value: "0"
+        - name: "TF_DOWNLOAD_CLANG"
+          value: "0"
+        - name: "TF_SET_ANDROID_WORKSPACE"
+          value: "0"
+        - name: "TF_NEED_AWS"
+          value: "0"
+        - name: "TF_NEED_TENSORRT"
+          value: "0"
+        - name: "TF_NEED_ROCM"
+          value: "0"
+        - name: "TF_NEED_IGNITE"
+          value: "0"
+        - name: "NCCL_INSTALL_PATH"
+          value: "/usr/local/nccl-2.2"

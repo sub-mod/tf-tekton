@@ -1,0 +1,71 @@
+apiVersion: tekton.dev/v1alpha1
+kind: TriggerTemplate
+metadata:
+  name: pipeline-template
+spec:
+  params:
+  - name: pythonverion
+    description: The python version to be build.
+    default: master
+  - name: tensorflowverion
+    description: The tensorflow version to be build.
+  - name: message
+    description: The message to print
+    default: This is the default message
+  - name: contenttype
+    description: The Content-Type of the event
+  resourcetemplates:
+  - apiVersion: tekton.dev/v1alpha1
+    kind: PipelineResource
+    metadata:
+      name: git-repo
+    spec:
+      type: git
+      params:
+        - name: revision
+          value: master
+        - name: url
+          value: https://github.com/harshad16/tensorflow-build
+  - apiVersion: tekton.dev/v1alpha1
+    kind: PipelineResource
+    metadata:
+      name: build-image
+    spec:
+      type: image
+      params:
+        - name: url
+          value: image-registry.openshift-image-registry.svc:5000/tekton-demo/tf-test:latest
+  - apiVersion: tekton.dev/v1alpha1
+    kind: PipelineResource
+    metadata:
+      name: git-source-$(uid)
+    spec:
+      type: git
+      params:
+      - name: revision
+        value: $(params.gitrevision)
+      - name: url
+        value: $(params.gitrepositoryurl)
+  - apiVersion: tekton.dev/v1alpha1
+    kind: PipelineRun
+    metadata:
+      name: tf-build-pipeline-run
+    spec:
+      serviceAccount: tekton-demo
+      pipelineRef:
+        name: tf-build-pipeline
+      params:
+      - name: message
+        value: $(params.message)
+      - name: contenttype
+        value: $(params.contenttype)
+      resources:
+      - name: git-repo
+        resourceRef:
+          name: git-repo
+      - name: build-image
+        resourceRef:
+          name: build-image
+      - name: git-source
+        resourceRef:
+          name: git-source-$(uid)
