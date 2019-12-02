@@ -21,7 +21,7 @@ k8s-style CI/CD pipeline for Tensorflow builds
 
 ### Trigger Test
 
-1. Setup Tekton Pipeline in cluster. Follow [Tekton Pipeline Documentation](https://github.com/tektoncd/pipeline/blob/master/docs/install.md)
+1. Setup Tekton Pipeline and Tekton Trigger in cluster. Follow [Tekton Pipeline Documentation](https://github.com/tektoncd/pipeline/blob/master/docs/install.md) and [Tekton Trigger Documentation](https://github.com/tektoncd/triggers/blob/master/docs/install.md)
 2. Create the resources for the example:
 
   ```bash
