@@ -19,7 +19,7 @@ spec:
       command: ["/bin/sh"]
       args:
         - "-c"
-        - "env"
+        - "/usr/libexec/s2i/manylinux2010"
       env:
         - name: "CUSTOM_BUILD"
           value: "bazel build -c opt --copt=-mavx --copt=-mavx2 --copt=-mfma --copt=-mfpmath=both --copt=-msse4.2 --define='grpc_no_ares=true' --cxxopt='-std=c++11' --cxxopt='-D_GLIBCXX_USE_CXX11_ABI=0' --verbose_failures //tensorflow/tools/pip_package:build_pip_package"

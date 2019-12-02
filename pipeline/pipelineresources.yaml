@@ -1,0 +1,22 @@
+---
+apiVersion: tekton.dev/v1alpha1
+kind: PipelineResource
+metadata:
+  name: git-repo
+spec:
+  type: git
+  params:
+    - name: revision
+      value: master
+    - name: url
+      value: https://github.com/sub-mod/tensorflow-build
+---
+apiVersion: tekton.dev/v1alpha1
+kind: PipelineResource
+metadata:
+  name: build-image
+spec:
+  type: image
+  params:
+    - name: url
+      value: image-registry.openshift-image-registry.svc:5000/tekton-demo/tf-test:latest
