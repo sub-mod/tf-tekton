@@ -41,7 +41,7 @@ spec:
         memory: "10Gi"
         cpu: "8"
       limits:
-        memory: "10Gi"
+        memory: "15Gi"
         cpu: "8"
     image: $(inputs.params.BUILDER_IMAGE)
     workingDir: /workspace/source
@@ -53,6 +53,13 @@ spec:
       privileged: true
 
   - name: push
+    resources:
+      requests:
+        memory: "2Gi"
+        cpu: "2"
+      limits:
+        memory: "4Gi"
+        cpu: "4"
     image: $(inputs.params.BUILDER_IMAGE)
     workingDir: /workspace/source
     command: ['buildah', 'push', '--tls-verify=$(inputs.params.TLSVERIFY)', '$(outputs.resources.image.url)', 'docker://$(outputs.resources.image.url)']

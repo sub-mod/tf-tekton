@@ -15,11 +15,11 @@ spec:
     - name: list
       resources:
         limits:
-          memory: "20Gi"
-          cpu: "20"
+          memory: "30Gi"
+          cpu: "30"
         requests:
-          memory: "20Gi"
-          cpu: "20"
+          memory: "10Gi"
+          cpu: "10"
       image: $(inputs.resources.build-image.url)
       workingDir: /workspace/
       securityContext:
@@ -82,7 +82,7 @@ spec:
         - name: "EXTRA_BAZEL_ARGS"
           value: "--host_javabase=@local_jdk//:jdk"
         - name: "LOCAL_BUILD"
-          value: "y"
+          value: "n"
         - name: "TF_NEED_JEMALLOC"
           value: "0"
         - name: "TF_NEED_OPENCL_SYCL"

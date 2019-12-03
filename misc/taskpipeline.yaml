@@ -1,0 +1,22 @@
+---
+apiVersion: tekton.dev/v1alpha1
+kind: Pipeline
+metadata:
+  name: tf-run-pipeline
+spec:
+  resources:
+    - name: git-repo
+      type: git
+    - name: build-image
+      type: image
+  tasks:
+    - name: tf-task-run
+      taskRef:
+        name: tf-run
+      resources:
+        inputs:
+          - name: build-image
+            resource: build-image
+        outputs:
+          - name: source
+            resource: git-repo
