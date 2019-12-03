@@ -36,6 +36,13 @@ spec:
 
   steps:
   - name: build
+    resources:
+      requests:
+        memory: "10Gi"
+        cpu: "8"
+      limits:
+        memory: "10Gi"
+        cpu: "8"
     image: $(inputs.params.BUILDER_IMAGE)
     workingDir: /workspace/source
     command: ['buildah', 'bud', '--build-arg', 'BAZEL_VERSION=$(inputs.params.BAZEL_VERSION)', '--build-arg', 'DEV_TOOLSET_VERSION=$(inputs.params.DEV_TOOLSET_VERSION)', '--build-arg', 'PYTHON_VERSION=$(inputs.params.PYTHON_VERSION)', '--tls-verify=$(inputs.params.TLSVERIFY)', '--layers', '-f', '$(inputs.params.DOCKERFILE)', '-t', '$(outputs.resources.image.url)', '.']

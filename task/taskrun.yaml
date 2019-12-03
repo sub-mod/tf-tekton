@@ -1,0 +1,26 @@
+apiVersion: tekton.dev/v1alpha1
+kind: TaskRun
+metadata:
+  name: test-tf-run
+spec:
+  outputs:
+    resources:
+    - name: source
+      resourceSpec:
+        type: git
+        params:
+          - name: revision
+            value: master
+          - name: url
+            value: https://github.com/sub-mod/tensorflow-build
+  inputs:
+    resources:
+    - name: build-image
+      resourceSpec:
+        type: image
+        params:
+          - name: url
+            value: image-registry.openshift-image-registry.svc:5000/tekton-demo/tf-test:latest
+  taskRef:
+    kind: Task
+    name: tf-run

@@ -13,6 +13,13 @@ spec:
       type: git
   steps:
     - name: list
+      resources:
+        limits:
+          memory: "20Gi"
+          cpu: "20"
+        requests:
+          memory: "20Gi"
+          cpu: "20"
       image: $(inputs.resources.build-image.url)
       workingDir: /workspace/
       securityContext:
