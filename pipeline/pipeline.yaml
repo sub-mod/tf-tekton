@@ -10,7 +10,7 @@ spec:
     - name: build-image
       type: image
   tasks:
-    - name: tf-build-run
+    - name: tf-build-env
       taskRef:
         name: buildah
       params:
@@ -31,7 +31,7 @@ spec:
         outputs:
           - name: image
             resource: build-image
-    - name: tf-task-run
+    - name: tf-build-run
       taskRef:
         name: tf-run
       resources:
@@ -42,4 +42,4 @@ spec:
           - name: source
             resource: git-repo
       runAfter:
-        - tf-build-run
+        - tf-build-env

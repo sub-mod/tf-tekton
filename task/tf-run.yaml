@@ -12,7 +12,7 @@ spec:
     - name: source
       type: git
   steps:
-    - name: list
+    - name: bazel-build
       resources:
         limits:
           memory: "30Gi"
@@ -44,7 +44,7 @@ spec:
         - name: "TF_CUDNN_VERSION"
           value: "7"
         - name: "TF_CUDA_VERSION"
-          value: "10.0"
+          value: "10.1"
         - name: "TF_NEED_CUDA"
           value: "0"
         - name: "GCC_HOST_COMPILER_PATH"
