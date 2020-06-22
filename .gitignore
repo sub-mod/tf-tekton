@@ -1,0 +1,8 @@
+tools_test/*
+*.pyc
+__pycache__
+*.swp
+.vscode/
+.idea/**
+[Bb]uild/
+*.whl
