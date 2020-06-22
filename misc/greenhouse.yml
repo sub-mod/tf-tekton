@@ -1,0 +1,72 @@
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: greenhouse
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 20Gi #each TF branch needs 5Gi-10Gi.
+  volumeMode: Filesystem
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: greenhouse
+  labels:
+    app: greenhouse
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: greenhouse
+    spec:
+      containers:
+      - name: greenhouse
+        image: gcr.io/k8s-testimages/greenhouse:latest
+        imagePullPolicy: Always
+        ports:
+        - name: cache
+          containerPort: 8080
+        - name: metrics
+          containerPort: 9090
+        args:
+        - --dir=/data
+        - --min-percent-blocks-free=2
+        volumeMounts:
+        - name: cache
+          mountPath: /data
+      volumes:
+      - name: cache
+        persistentVolumeClaim:
+          claimName: greenhouse
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: bazel-cache-metrics
+spec:
+  selector:
+    app: greenhouse
+  ports:
+  - name: default
+    protocol: TCP
+    port: 80
+    targetPort: 9090
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: bazel-cache
+  labels:
+    run: bazel-cache
+spec:
+  ports:
+  - port: 8080
+    protocol: TCP
+  selector:
+    app: greenhouse
+---
