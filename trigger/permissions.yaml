@@ -1,0 +1,39 @@
+# ServiceAccount used by for build pipeline EventListener.
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: build-pipeline-webhook
+
+# Role to associated with build pipeline EventListener serviceaccount.
+---
+kind: Role
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: build-pipeline-triggers-minimal
+rules:
+# Permissions for every EventListener deployment to function
+- apiGroups: ["tekton.dev"]
+  resources: ["eventlisteners", "triggerbindings", "triggertemplates", "tasks", "taskruns"]
+  verbs: ["get"]
+- apiGroups: [""]
+  resources: ["configmaps"]
+  verbs: ["get", "list", "watch"]
+# Permissions to create resources in associated TriggerTemplates
+- apiGroups: ["tekton.dev"]
+  resources: ["pipelineruns", "pipelineresources", "taskruns"]
+  verbs: ["create"]
+
+# Rolebinding for build pipeline EventListener serviceaccount.
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: build-pipeline-triggers-binding
+subjects:
+- kind: ServiceAccount
+  name: build-pipeline-webhook
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: build-pipeline-triggers-minimal

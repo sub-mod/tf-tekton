@@ -1,11 +1,12 @@
+# Build pipeline EventListener.
 apiVersion: tekton.dev/v1alpha1
 kind: EventListener
 metadata:
-  name: listener
+  name: build-pipeline-event-listener
 spec:
-  serviceAccountName: tekton-demo
+  serviceAccountName: build-pipeline-webhook
   triggers:
     - binding:
-        name: pipeline-binding
+        name: build-pipeline-binding
       template:
-        name: pipeline-template
+        name: build-pipeline-template
