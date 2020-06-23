@@ -1,7 +1,7 @@
 apiVersion: tekton.dev/v1alpha1
 kind: TaskRun
 metadata:
-  name: test-tf-run
+  name: test-tensorflow-cpu
 spec:
   outputs:
     resources:
@@ -23,4 +23,4 @@ spec:
             value: image-registry.openshift-image-registry.svc:5000/tekton-demo/tf-test:latest
   taskRef:
     kind: Task
-    name: tf-run
+    name: tensorflow-cpu
