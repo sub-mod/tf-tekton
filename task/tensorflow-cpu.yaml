@@ -1,0 +1,114 @@
+apiVersion: tekton.dev/v1alpha1
+kind: Task
+metadata:
+  name: tensorflow-cpu
+spec:
+  inputs:
+    resources:
+    - name: build-image
+      type: image
+  outputs:
+    resources:
+    - name: source
+      type: git
+  steps:
+    - name: bazel-build
+      resources:
+        limits:
+          memory: "40Gi"
+          cpu: "30"
+        requests:
+          memory: "40Gi"
+          cpu: "20"
+      image: $(inputs.resources.build-image.url)
+      workingDir: /workspace/
+      securityContext:
+        runAsUser: 0
+        privileged: true
+      command: ["/bin/sh"]
+      args:
+        - "-c"
+        - "/usr/libexec/s2i/manylinux2010"
+      env:
+        - name: "CUSTOM_BUILD"
+          value: "bazel build -c opt --copt=-mavx --copt=-mavx512f --copt=-mavx2 --copt=-mfma --copt=-mfpmath=both --copt=-msse4.2 --define='grpc_no_ares=true' --cxxopt='-D_GLIBCXX_USE_CXX11_ABI=0' --verbose_failures //tensorflow/tools/pip_package:build_pip_package"
+        - name: "TEST_LOOP"
+          value: "n"
+        - name: "TF_GIT_BRANCH"
+          value: "r2.2"
+        - name: "PYTHON_VERSION"
+          value: "3.6"
+        - name: "BAZEL_VERSION"
+          value: "2.0.0"
+        - name: "DEV_TOOLSET_VERSION"
+          value: "7"
+        - name: "TF_NEED_CUDA"
+          value: "0"
+        - name: "GCC_HOST_COMPILER_PATH"
+          value: "/opt/rh/devtoolset-7/root/usr/bin/gcc"
+        - name: "GCC_HOST_COMPILER_PREFIX"
+          value: "/opt/rh/devtoolset-7/root/usr/bin"
+        - name: "GIT_RELEASE_REPO"
+          valueFrom:
+            secretKeyRef:
+              name: tf-secret
+              key: git-release-repo
+        - name: "GIT_TOKEN"
+          valueFrom:
+            secretKeyRef:
+              name: tf-secret
+              key: git-token
+        - name: "BUILD_OPTS"
+          value: ""
+        - name: "HOST_ON_HTTP_SERVER"
+          value: "n"
+        - name: "TEST_WHEEL_FILE"
+          value: "y"
+        - name: "GIT_TAG"
+          value: ""
+        - name: "CUSTOM_TEST"
+          value: "bazel test -c opt --local_resources 2048.51.0 -- //tensorflow/... -//tensorflow/compiler/... -//tensorflow/contrib/lite/..."
+        - name: "TF_ENABLE_TEST"
+          value: "0"
+        - name: "EXTRA_BAZEL_ARGS"
+          value: "--host_javabase=@local_jdk//:jdk"
+        - name: "LOCAL_BUILD"
+          value: "n"
+        - name: "TF_NEED_JEMALLOC"
+          value: "0"
+        - name: "TF_NEED_OPENCL_SYCL"
+          value: "0"
+        - name: "TF_CUDA_CLANG"
+          value: "0"
+        - name: "TF_NEED_GCP"
+          value: "0"
+        - name: "TF_NEED_VERBS"
+          value: "0"
+        - name: "TF_NEED_HDFS"
+          value: "0"
+        - name: "TF_ENABLE_XLA"
+          value: "0"
+        - name: "TF_NEED_OPENCL"
+          value: "0"
+        - name: "TF_NEED_MPI"
+          value: "0"
+        - name: "TF_NEED_GDR"
+          value: "0"
+        - name: "TF_NEED_S3"
+          value: "0"
+        - name: "TF_NEED_KAFKA"
+          value: "0"
+        - name: "TF_NEED_OPENCL_SYCL"
+          value: "0"
+        - name: "TF_DOWNLOAD_CLANG"
+          value: "0"
+        - name: "TF_SET_ANDROID_WORKSPACE"
+          value: "0"
+        - name: "TF_NEED_AWS"
+          value: "0"
+        - name: "TF_NEED_TENSORRT"
+          value: "0"
+        - name: "TF_NEED_ROCM"
+          value: "0"
+        - name: "TF_NEED_IGNITE"
+          value: "0"

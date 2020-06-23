@@ -1,7 +1,7 @@
 apiVersion: tekton.dev/v1alpha1
 kind: Task
 metadata:
-  name: tf-run
+  name: tensorflow-gpu
 spec:
   inputs:
     resources:
@@ -30,7 +30,7 @@ spec:
         - "/usr/libexec/s2i/manylinux2010"
       env:
         - name: "CUSTOM_BUILD"
-          value: "bazel build -c opt --copt=-mavx --copt=-mavx2 --copt=-mfma --copt=-mfpmath=both --copt=-msse4.2 --define='grpc_no_ares=true' --cxxopt='-std=c++11' --cxxopt='-D_GLIBCXX_USE_CXX11_ABI=0' --verbose_failures //tensorflow/tools/pip_package:build_pip_package"
+          value: "bazel build -c opt --copt=-mavx --copt=-mavx512f --copt=-mavx2 --copt=-mfma --copt=-mfpmath=both --copt=-msse4.2 --define='grpc_no_ares=true' --cxxopt='-D_GLIBCXX_USE_CXX11_ABI=0' --verbose_failures //tensorflow/tools/pip_package:build_pip_package"
         - name: "TEST_LOOP"
           value: "n"
         - name: "TF_GIT_BRANCH"
@@ -46,7 +46,7 @@ spec:
         - name: "TF_CUDA_VERSION"
           value: "10.1"
         - name: "TF_NEED_CUDA"
-          value: "0"
+          value: "1"
         - name: "GCC_HOST_COMPILER_PATH"
           value: "/opt/rh/devtoolset-7/root/usr/bin/gcc"
         - name: "GCC_HOST_COMPILER_PREFIX"
