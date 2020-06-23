@@ -1,5 +1,5 @@
-oc delete pipelineresource/build-image
-oc delete pipelineresource/git-repo
-oc delete pipeline/tf-build-pipeline
-oc delete task/tf-run
-oc delete pipelinerun/tf-build-pipeline-run
+oc delete -f pipeline/pipelineresources.yaml
+oc delete -f task/build-environment.yaml
+oc delete -f task/tensorflow-cpu.yaml
+oc delete -f pipeline/pipeline.yaml
+oc delete -f pipeline/pipelinerun.yaml
