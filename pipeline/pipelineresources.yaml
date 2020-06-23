@@ -9,7 +9,7 @@ spec:
     - name: revision
       value: master
     - name: url
-      value: https://github.com/sub-mod/tensorflow-build
+      value: https://github.com/harshad16/tensorflow-build
 ---
 apiVersion: tekton.dev/v1alpha1
 kind: PipelineResource
@@ -19,4 +19,4 @@ spec:
   type: image
   params:
     - name: url
-      value: image-registry.openshift-image-registry.svc:5000/tekton-demo/tf-test:latest
+      value: docker-registry.default.svc:5000/tensorflow/tensorflow:latest

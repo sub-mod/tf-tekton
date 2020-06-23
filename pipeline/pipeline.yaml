@@ -1,8 +1,7 @@
----
 apiVersion: tekton.dev/v1alpha1
 kind: Pipeline
 metadata:
-  name: tf-build-pipeline
+  name: tensorflow-build-pipeline
 spec:
   resources:
     - name: git-repo
@@ -10,9 +9,9 @@ spec:
     - name: build-image
       type: image
   tasks:
-    - name: tf-build-env
+    - name: tensorflow-environment
       taskRef:
-        name: buildah
+        name: build-environment
       params:
         - name: DOCKERFILE
           value: Dockerfile.centos6
@@ -21,7 +20,7 @@ spec:
         - name: DEV_TOOLSET_VERSION
           value: "7"
         - name: BAZEL_VERSION
-          value: "0.24.1"
+          value: "2.0.0"
         - name: PYTHON_VERSION
           value: "3.6"
       resources:
@@ -31,9 +30,9 @@ spec:
         outputs:
           - name: image
             resource: build-image
-    - name: tf-build-run
+    - name: tensorflow-build-process
       taskRef:
-        name: tf-run
+        name: tensorflow-cpu
       resources:
         inputs:
           - name: build-image
@@ -42,4 +41,4 @@ spec:
           - name: source
             resource: git-repo
       runAfter:
-        - tf-build-env
+        - tensorflow-environment
