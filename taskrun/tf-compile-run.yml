@@ -1,0 +1,24 @@
+---
+apiVersion: tekton.dev/v1alpha1
+kind: TaskRun
+metadata:
+  name: clone-compile-tf-run
+spec:
+  serviceAccountName: tensorflow
+  workspaces:
+  - name: task-workspace
+    persistentVolumeClaim:
+      claimName: workspace-pvc
+    subPath: workspace_storage
+  taskRef:
+    name: clone-compile-tf
+  inputs:
+    params:
+    - name: BUILD_TAG
+      value: manylinux2010
+    - name: BRANCH
+      value: v2.2
+    resources:
+    - name: IMAGE
+      resourceRef:
+        name: base-image

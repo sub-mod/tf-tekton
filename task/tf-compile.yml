@@ -1,0 +1,199 @@
+--- 
+apiVersion: tekton.dev/v1alpha1
+kind: Task
+metadata:
+  name: clone-compile-tf
+spec:
+  workspaces:
+  - name: task-workspace
+    mountPath: /myworkspace-pvc/
+  inputs:
+    params:
+      - default: default
+        description: BUILD_TAG
+        name: BUILD_TAG
+        type: string
+      - default: v2.0
+        description: BRANCH
+        name: BRANCH
+        type: string
+    resources:
+      - name: IMAGE
+        type: image
+
+  steps:
+    - name: git-clone-repo
+      image: alpine/git:v2.24.3
+      securityContext:
+        privileged: true
+      script: |
+        set -ex
+        ## Note: needs to be root for this task to work
+        id
+        echo "HOME=$HOME"
+        echo "USER=$USER"
+        BRANCH=$(inputs.params.BRANCH)
+        echo "BRANCH=$BRANCH"
+
+        git clone --branch=$BRANCH --depth=1 https://github.com/tensorflow/tensorflow.git /compiledir/repo
+        ls -ahl /compiledir/repo
+        du -sh /compiledir/repo
+        
+        ## Note:
+        ## alpine/git image starts as root.
+        ## The files have root permissions.Start a new task which will copy the code to get default user permission.
+      volumeMounts:
+        - mountPath: /compiledir
+          name: compiledir
+        - mountPath: /var/lib/containers
+          name: varlibcontainers
+      workingDir: /compiledir
+
+    - name: copy-repo
+      image: quay.io/sub_mod/jq #alpine/git:v2.24.3
+      securityContext:
+        privileged: true
+      script: |
+        set -ex
+        id
+        echo "HOME="$HOME
+        echo "USER="$USER
+
+        ls -lah /compiledir/repo
+        
+        # CLEANUP
+        rm -fr /myworkspace-pvc/tensorflow
+        rm -fr /myworkspace-pvc/pip-venv
+
+        # COPY TF code into workspace Volume
+        mkdir -p /myworkspace-pvc/tensorflow
+        cp -a /compiledir/repo/. /myworkspace-pvc/tensorflow/
+          
+        ls -lah /myworkspace-pvc/tensorflow/
+        ls -lah /myworkspace-pvc/      
+      volumeMounts:
+        - mountPath: /compiledir
+          name: compiledir
+        - mountPath: /var/lib/containers
+          name: varlibcontainers
+      workingDir: /compiledir
+    - args:
+        - '-c'
+        - |
+          source scl_source enable devtoolset-7 rh-python36
+          set -ex
+          echo "PWD=$PWD"
+          gcc --version
+          python -V
+
+          JAVA_HOME='/usr/lib/jvm/java-1.8.0-openjdk-1.8.0*'
+          FULL_JAVA_HOME=$(readlink -f $JAVA_HOME)
+          export JAVA_HOME=$FULL_JAVA_HOME
+          export PATH=$PATH:/tekton/home/.local/bin
+          echo "====================================="
+
+          pip3 install --upgrade pip --user
+          pip3 install --upgrade wheel setuptools virtualenv --user
+          python3 -m virtualenv pip-venv
+          source pip-venv/bin/activate
+          which python
+          which pip3
+          export PYTHON_BIN_PATH=/myworkspace-pvc/pip-venv/bin/python
+
+          ## 2.2.0 https://github.com/tensorflow/tensorflow/blob/79518facb4b857af9d9d5df2da463fdbf7eb0e3e/tensorflow/tools/pip_package/setup.py
+          ## 2.0.0 https://github.com/tensorflow/tensorflow/blob/77fde6149586c9f1efd53e95821cbcf95613287e/tensorflow/tools/pip_package/setup.py
+          pip3 install scipy jupyter matplotlib Pillow scikit-learn protobuf termcolor grpcio mock gast backports.weakref astor absl-py futures pytest pytest-xdist Keras-Applications==1.0.8 Keras-Preprocessing==1.1.0 wheel
+          pip3 install argparse 
+          pip3 install 'numpy >= 1.16.0, < 1.19.0'
+
+          cd /myworkspace-pvc/tensorflow/
+          #bazel clean
+          ls -lah 
+          env | sort
+          ./configure --workspace=/myworkspace-pvc/tensorflow/
+          ls -lah 
+          echo "HOME="$HOME
+          ## bazel-cache service in default namespace
+          CACHE_HOST="bazel-cache.default.svc.cluster.local"
+          CACHE_PORT="8080"
+          cache_url="http://${CACHE_HOST}:${CACHE_PORT}/tensorflow/2"
+          echo "build --remote_http_cache=${cache_url}"
+          echo "====================================="
+          bazel build --jobs=10 --strip=never --config=opt --config=v1 --verbose_failures  --remote_http_cache=${cache_url} //tensorflow/tools/pip_package:build_pip_package
+          echo "====================================="
+          ls -l bazel-bin/tensorflow/tools/
+          bazel-bin/tensorflow/tools/pip_package/build_pip_package /myworkspace-pvc/
+
+      command:
+        - /bin/sh
+      image: '$(inputs.resources.IMAGE.url):$(inputs.params.BUILD_TAG)'
+      name: bazel-build
+      env:
+        - name: "GCC_HOST_COMPILER_PATH"
+          value: "/opt/rh/devtoolset-7/root/usr/bin/gcc"
+        - name: "GCC_HOST_COMPILER_PREFIX"
+          value: "/opt/rh/devtoolset-7/root/usr/bin"
+        - name: "EXTRA_BAZEL_ARGS"
+          value: "--host_javabase=@local_jdk//:jdk"
+        - name: "TF_NEED_CUDA"
+          value: "0"
+        - name: "TF_NEED_JEMALLOC"
+          value: "0"
+        - name: "TF_NEED_OPENCL_SYCL"
+          value: "0"
+        - name: "TF_CUDA_CLANG"
+          value: "0"
+        - name: "TF_NEED_GCP"
+          value: "0"
+        - name: "TF_NEED_VERBS"
+          value: "0"
+        - name: "TF_NEED_HDFS"
+          value: "0"
+        - name: "TF_ENABLE_XLA"
+          value: "0"
+        - name: "TF_NEED_OPENCL"
+          value: "0"
+        - name: "TF_NEED_MPI"
+          value: "0"
+        - name: "TF_NEED_GDR"
+          value: "0"
+        - name: "TF_NEED_S3"
+          value: "0"
+        - name: "TF_NEED_KAFKA"
+          value: "0"
+        - name: "TF_NEED_OPENCL_SYCL"
+          value: "0"
+        - name: "TF_DOWNLOAD_CLANG"
+          value: "0"
+        - name: "TF_SET_ANDROID_WORKSPACE"
+          value: "0"
+        - name: "TF_NEED_AWS"
+          value: "0"
+        - name: "TF_NEED_TENSORRT"
+          value: "0"
+        - name: "TF_NEED_ROCM"
+          value: "0"
+        - name: "TF_NEED_IGNITE"
+          value: "0"
+      resources:
+        limits:
+          cpu: '30'
+          memory: 36Gi
+        requests:
+          cpu: '30'
+          memory: 36Gi
+      securityContext:
+        privileged: true
+      volumeMounts:
+        - mountPath: /dev/shm
+          name: dshm
+        - mountPath: /var/lib/containers
+          name: varlibcontainers
+        - mountPath: /compiledir
+          name: compiledir
+      workingDir: /myworkspace-pvc
+  volumes:
+    - emptyDir: {}
+      name: varlibcontainers
+    - emptyDir: {}
+      name: compiledir
