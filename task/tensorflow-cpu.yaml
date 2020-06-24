@@ -15,11 +15,11 @@ spec:
     - name: bazel-build
       resources:
         limits:
-          memory: "40Gi"
-          cpu: "30"
-        requests:
-          memory: "40Gi"
+          memory: "20Gi"
           cpu: "20"
+        requests:
+          memory: "10Gi"
+          cpu: "10"
       image: $(inputs.resources.build-image.url)
       workingDir: /workspace/
       securityContext:
@@ -31,7 +31,7 @@ spec:
         - "/usr/libexec/s2i/manylinux2010"
       env:
         - name: "CUSTOM_BUILD"
-          value: "bazel build -c opt --copt=-mavx --copt=-mavx512f --copt=-mavx2 --copt=-mfma --copt=-mfpmath=both --copt=-msse4.2 --define='grpc_no_ares=true' --cxxopt='-D_GLIBCXX_USE_CXX11_ABI=0' --verbose_failures //tensorflow/tools/pip_package:build_pip_package"
+          value: "bazel build -c opt --local_resources 8192,8,1.0 --copt=-mavx --copt=-mavx512f --copt=-mavx2 --copt=-mfma --copt=-mfpmath=both --copt=-msse4.2 --define='grpc_no_ares=true' --cxxopt='-D_GLIBCXX_USE_CXX11_ABI=0' --verbose_failures //tensorflow/tools/pip_package:build_pip_package"
         - name: "TEST_LOOP"
           value: "n"
         - name: "TF_GIT_BRANCH"
